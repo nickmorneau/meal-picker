@@ -135,6 +135,7 @@
     padding:14px 14px 12px;transition:border-color .15s,background .15s;
   }
   .card.picked{border-color:var(--accent);background:var(--accent-soft)}
+  .card-img{width:calc(100% + 28px);margin:-14px -14px 12px;height:150px;object-fit:cover;display:block;border-radius:16px 16px 0 0}
   .card-top{display:flex;align-items:flex-start;gap:12px}
   .card-main{flex:1;min-width:0;text-align:left;padding:2px 0}
   .card-name{font-family:"Bricolage Grotesque",sans-serif;font-size:19.5px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
@@ -354,52 +355,52 @@
 /* Standard dinners/wraps: site lists a $14–$18 range; 4 oz = $14, 6 oz = $16 follows the verified per-size mapping. */
 var DINNERS = [
   /* size only — nothing to choose */
-  {id:"bbq-chicken-bowl", name:"BBQ Chicken Bowl", tag:"Chicken"},
-  {id:"beef-chilli", name:"Beef Chilli", tag:"Beef"},
-  {id:"buddha-bowl", name:"Buddha Bowl", tag:"Veggie", note:"Tofu, fixed"},
-  {id:"cajun-bowl", name:"Cajun Bowl", tag:"Chicken"},
-  {id:"cajun-chicken-dinner", name:"Cajun Chicken Dinner", tag:"Chicken"},
-  {id:"cajun-salmon", name:"Cajun Salmon", tag:"Fish"},
-  {id:"chicken-fajita-bowl", name:"Chicken Fajita Bowl", tag:"Chicken"},
-  {id:"fish-taco-bowl", name:"Fish Taco Bowl", tag:"Fish"},
-  {id:"keto-chicken-alfredo", name:"Keto Chicken Alfredo", tag:"Keto"},
-  {id:"montreal-chicken-mash", name:"Montreal Chicken and Mash", tag:"Chicken", note:"Chicken breast, fixed"},
+  {id:"bbq-chicken-bowl", name:"BBQ Chicken Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_0932.jpg", tag:"Chicken"},
+  {id:"beef-chilli", name:"Beef Chilli", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1472-scaled.jpeg", tag:"Beef"},
+  {id:"buddha-bowl", name:"Buddha Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1514-scaled.jpeg", tag:"Veggie", note:"Tofu, fixed"},
+  {id:"cajun-bowl", name:"Cajun Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2025/03/img_7137.jpg", tag:"Chicken"},
+  {id:"cajun-chicken-dinner", name:"Cajun Chicken Dinner", img:"https://trainingdaycafe.com/wp-content/uploads/2025/03/img_7135.jpg", tag:"Chicken"},
+  {id:"cajun-salmon", name:"Cajun Salmon", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1501-scaled.jpeg", tag:"Fish"},
+  {id:"chicken-fajita-bowl", name:"Chicken Fajita Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_0856.jpg", tag:"Chicken"},
+  {id:"fish-taco-bowl", name:"Fish Taco Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_0940.jpg", tag:"Fish"},
+  {id:"keto-chicken-alfredo", name:"Keto Chicken Alfredo", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_0959.jpg", tag:"Keto"},
+  {id:"montreal-chicken-mash", name:"Montreal Chicken and Mash", img:"https://trainingdaycafe.com/wp-content/uploads/2024/09/img_4248.jpg", tag:"Chicken", note:"Chicken breast, fixed"},
   /* base / carb choice */
-  {id:"bang-bang-chicken", name:"Bang Bang Chicken", tag:"Chicken", optLabel:"Base", options:["Brown rice","Quinoa","Cauliflower rice"]},
-  {id:"cajun-basa", name:"Cajun Basa", tag:"Fish", optLabel:"Base", options:["Brown Rice","White Rice","Potatoes"]},
-  {id:"chilli-chicken-bowl", name:"Chilli Chicken Bowl", tag:"Chicken", optLabel:"Base", options:["Brown Rice","White Rice","Quinoa","Cauliflower Rice"]},
-  {id:"roll-in-a-bowl", name:"Roll in a Bowl", tag:"Bowl", optLabel:"Carb", options:["White rice","Brown rice","Quinoa","Cauliflower rice"]},
+  {id:"bang-bang-chicken", name:"Bang Bang Chicken", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_7999-scaled.jpeg", tag:"Chicken", optLabel:"Base", options:["Brown rice","Quinoa","Cauliflower rice"]},
+  {id:"cajun-basa", name:"Cajun Basa", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_7999-scaled.jpeg", tag:"Fish", optLabel:"Base", options:["Brown Rice","White Rice","Potatoes"]},
+  {id:"chilli-chicken-bowl", name:"Chilli Chicken Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1446-scaled.jpeg", tag:"Chicken", optLabel:"Base", options:["Brown Rice","White Rice","Quinoa","Cauliflower Rice"]},
+  {id:"roll-in-a-bowl", name:"Roll in a Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1529-scaled.jpeg", tag:"Bowl", optLabel:"Carb", options:["White rice","Brown rice","Quinoa","Cauliflower rice"]},
   /* protein choice */
-  {id:"autumn-bbq-bowl", name:"Autumn BBQ Bowl", tag:"Bowl", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Beef Meatballs","Tofu"]},
-  {id:"bbq-jerk-bowl", name:"BBQ Jerk Bowl", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Tofu"]},
-  {id:"bombay-bowl", name:"Bombay Bowl", tag:"Bowl", optLabel:"Protein", options:["Chicken Thighs","Chicken Breast","White Fish","Tofu"]},
-  {id:"buffalo-bowl", name:"Buffalo Bowl", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Ground turkey","Ground beef"]},
-  {id:"garlic-lemon-bowl", name:"Garlic Lemon Bowl", tag:"Bowl", optLabel:"Protein", options:["Chicken Thighs","Chicken Breast","Tofu","Salmon","White Fish"]},
-  {id:"mediterranean-pasta", name:"Mediterranean Pasta", tag:"Pasta", optLabel:"Protein", options:["Chicken breast","Soy veggie patty","Ground turkey","Ground beef"]},
-  {id:"mushroom-alfredo", name:"Mushroom Alfredo", tag:"Pasta", optLabel:"Protein", options:["Chicken breast","Gardein Soy Chickn","Turkey Meatballs","Beef Meatballs","Tofu"]},
-  {id:"harvest-bowl", name:"Harvest Bowl", tag:"Bowl", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Turkey Meatballs","Tofu"]},
-  {id:"keto-taco-bowl", name:"Keto Taco Bowl", tag:"Keto", optLabel:"Protein", options:["Taco Ground Beef","Cajun Chicken Breast","Tofu","Taco Ground Turkey","Basa (White Fish)","Salmon"]},
-  {id:"zoodles-meatballs", name:"Zoodles and Meatballs", tag:"Pasta", optLabel:"Meatballs", options:["Garlic Beef Meatballs","Turkey Meatballs","Yves Veggie Meatballs"]},
-  {id:"chicken-parm-bowl", name:"Chicken Parm Bowl", tag:"Chicken", optLabel:"Protein", options:["Chicken breast","Gardein Soy Chickn"]}
+  {id:"autumn-bbq-bowl", name:"Autumn BBQ Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/10/img_4709.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Beef Meatballs","Tofu"]},
+  {id:"bbq-jerk-bowl", name:"BBQ Jerk Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2025/02/img_6713.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Tofu"]},
+  {id:"bombay-bowl", name:"Bombay Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1484-scaled.jpeg", tag:"Bowl", optLabel:"Protein", options:["Chicken Thighs","Chicken Breast","White Fish","Tofu"]},
+  {id:"buffalo-bowl", name:"Buffalo Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2025/03/img_7139.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Ground turkey","Ground beef"]},
+  {id:"garlic-lemon-bowl", name:"Garlic Lemon Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1534-scaled.jpeg", tag:"Bowl", optLabel:"Protein", options:["Chicken Thighs","Chicken Breast","Tofu","Salmon","White Fish"]},
+  {id:"mediterranean-pasta", name:"Mediterranean Pasta", img:"https://trainingdaycafe.com/wp-content/uploads/2024/09/img_4248.jpg", tag:"Pasta", optLabel:"Protein", options:["Chicken breast","Soy veggie patty","Ground turkey","Ground beef"]},
+  {id:"mushroom-alfredo", name:"Mushroom Alfredo", img:"https://trainingdaycafe.com/wp-content/uploads/2024/09/img_4248.jpg", tag:"Pasta", optLabel:"Protein", options:["Chicken breast","Gardein Soy Chickn","Turkey Meatballs","Beef Meatballs","Tofu"]},
+  {id:"harvest-bowl", name:"Harvest Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/09/img_4248.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Turkey Meatballs","Tofu"]},
+  {id:"keto-taco-bowl", name:"Keto Taco Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_0976.jpg", tag:"Keto", optLabel:"Protein", options:["Taco Ground Beef","Cajun Chicken Breast","Tofu","Taco Ground Turkey","Basa (White Fish)","Salmon"]},
+  {id:"zoodles-meatballs", name:"Zoodles and Meatballs", img:"https://trainingdaycafe.com/wp-content/uploads/2024/05/img_1458-scaled.jpeg", tag:"Pasta", optLabel:"Meatballs", options:["Garlic Beef Meatballs","Turkey Meatballs","Yves Veggie Meatballs"]},
+  {id:"chicken-parm-bowl", name:"Chicken Parm Bowl", img:"https://trainingdaycafe.com/wp-content/uploads/2026/03/ChatGPT-Image-Mar-20-2026-at-09_35_38-PM.png", tag:"Chicken", optLabel:"Protein", options:["Chicken breast","Gardein Soy Chickn"]}
 ];
 
 var WRAPS = [
-  {id:"bad-ass-wrap", name:"Bad Ass Wrap", optLabel:"Protein", options:["Cajun Chicken Breast","Black Bean Patty","Soy Veggie Patty","Cajun Tofu","Cajun Chicken Thighs","Taco Ground Beef","Taco Ground Turkey"]},
-  {id:"bbq-chicken-wrap", name:"BBQ Chicken Wrap", optLabel:"Protein", options:["BBQ Chicken Breast","BBQ Vegetarian \"Chickn\""]},
+  {id:"bad-ass-wrap", name:"Bad Ass Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-178-copy.jpg", optLabel:"Protein", options:["Cajun Chicken Breast","Black Bean Patty","Soy Veggie Patty","Cajun Tofu","Cajun Chicken Thighs","Taco Ground Beef","Taco Ground Turkey"]},
+  {id:"bbq-chicken-wrap", name:"BBQ Chicken Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-146.jpg", optLabel:"Protein", options:["BBQ Chicken Breast","BBQ Vegetarian \"Chickn\""]},
   {id:"bbq-jerk-wrap", name:"BBQ Jerk Wrap", optLabel:"Protein", options:["BBQ Chicken Breast","BBQ Tofu"]},
-  {id:"bltc-wrap", name:"BLTC Wrap", note:"Cajun chicken, fixed"},
-  {id:"buffalo-wrap", name:"Buffalo Wrap", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Tofu","Veggie Patty"]},
-  {id:"mac-daddy-wrap", name:"Mac Daddy Wrap", optLabel:"Protein", options:["Ground Beef","Ground Turkey","Soy Veggie Patty","Tofu"]},
-  {id:"maharaja-wrap", name:"Maharaja Wrap", optLabel:"Protein", options:["Tandoori Chicken","Tandoori Tofu"]},
-  {id:"maple-dijon-wrap", name:"Maple Dijon Wrap", optLabel:"Protein", options:["Tofu","BetterPlant Veggie Patty","Cajun Chicken Breast","Italian Chicken Breast"]},
-  {id:"mighty-thor-wrap", name:"Mighty Thor Wrap", note:"Cajun chicken, fixed"},
-  {id:"pesto-broccoli-wrap", name:"Pesto Broccoli Wrap", optLabel:"Protein", options:["Italian Chicken Breast","Grilled Tofu","Veggie Patty"]},
-  {id:"thai-coconut-curry-wrap", name:"Thai Coconut Curry Wrap", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Tofu","Chickpeas"]},
-  {id:"thai-crunch-wrap", name:"Thai Crunch Wrap", optLabel:"Protein", options:["Chicken Breast","Grilled Tofu","Chicken Thighs"]},
-  {id:"the-big-dill", name:"The Big Dill", optLabel:"Protein", options:["Chicken breast","Tofu","BetterPlant Veggie Patty"]},
-  {id:"breakfast-wrap", name:"Breakfast Wrap", fixedPrice:9.99},
-  {id:"turkey-bacon-breakfast-wrap", name:"Turkey Bacon Breakfast Wrap", fixedPrice:10.50},
-  {id:"turkey-sausage-breakfast-wrap", name:"Turkey Sausage Breakfast Wrap",
+  {id:"bltc-wrap", name:"BLTC Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/01/TrainingDay03182022-69_websize.jpg", note:"Cajun chicken, fixed"},
+  {id:"buffalo-wrap", name:"Buffalo Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-102.jpg", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Tofu","Veggie Patty"]},
+  {id:"mac-daddy-wrap", name:"Mac Daddy Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-137.jpg", optLabel:"Protein", options:["Ground Beef","Ground Turkey","Soy Veggie Patty","Tofu"]},
+  {id:"maharaja-wrap", name:"Maharaja Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-32.jpg", optLabel:"Protein", options:["Tandoori Chicken","Tandoori Tofu"]},
+  {id:"maple-dijon-wrap", name:"Maple Dijon Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-41.jpg", optLabel:"Protein", options:["Tofu","BetterPlant Veggie Patty","Cajun Chicken Breast","Italian Chicken Breast"]},
+  {id:"mighty-thor-wrap", name:"Mighty Thor Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2021/06/img_6700.jpeg", note:"Cajun chicken, fixed"},
+  {id:"pesto-broccoli-wrap", name:"Pesto Broccoli Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-183.jpg", optLabel:"Protein", options:["Italian Chicken Breast","Grilled Tofu","Veggie Patty"]},
+  {id:"thai-coconut-curry-wrap", name:"Thai Coconut Curry Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2024/11/img_0611-scaled.jpeg", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Tofu","Chickpeas"]},
+  {id:"thai-crunch-wrap", name:"Thai Crunch Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-61_websize.jpg", optLabel:"Protein", options:["Chicken Breast","Grilled Tofu","Chicken Thighs"]},
+  {id:"the-big-dill", name:"The Big Dill", img:"https://trainingdaycafe.com/wp-content/uploads/2022/03/TrainingDay03182022-131.jpg", optLabel:"Protein", options:["Chicken breast","Tofu","BetterPlant Veggie Patty"]},
+  {id:"breakfast-wrap", name:"Breakfast Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2023/10/img_2778-scaled.jpeg", fixedPrice:9.99},
+  {id:"turkey-bacon-breakfast-wrap", name:"Turkey Bacon Breakfast Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2021/08/TrainingDay03182022-66_websize.jpg", fixedPrice:10.50},
+  {id:"turkey-sausage-breakfast-wrap", name:"Turkey Sausage Breakfast Wrap", img:"https://trainingdaycafe.com/wp-content/uploads/2024/10/img_4713-scaled.jpeg",
     optLabel:"Size", options:["Breakfast","Meal Size"], optPrices:{"Breakfast":10.50,"Meal Size":13.50},
     opt2Label:"Sauce", options2:["Hot Sauce","Pesto","Chipotle","Chilli Garlic","Salsa"]}
 ];
@@ -645,6 +646,7 @@ function renderDinners(){
       controls = '<button class="pick-btn" data-pick-person="'+person+'" data-id="'+d.id+'" aria-label="'+(picked?"Unpick ":"Pick ")+esc(d.name)+'" aria-pressed="'+picked+'">'+(picked?"✓":"+")+'</button>';
     }
     h += '<div class="card'+(picked?" picked":"")+'" id="dc-'+d.id+'">'
+      + (d.img ? '<img class="card-img" src="'+d.img+'" alt="'+esc(d.name)+'" loading="lazy" onerror="this.style.display=\'none\'" />' : "")
       + '<div class="card-top"><div class="card-main">'
       + '<div class="card-name">'+esc(d.name)+(d.tag?'<span class="tag">'+esc(d.tag)+'</span>':"")+'</div>'
       + '<div class="card-meta">'+dinnerPriceLabel(d)+(d.note?' · '+esc(d.note):"")+'</div></div>'
@@ -661,6 +663,7 @@ function renderWraps(){
     var priceTxt = w.optPrices ? money(w.optPrices[wrapChoice[w.id]]) :
       (w.fixedPrice ? money(w.fixedPrice) : "~"+money(wrapUnitPrice(w))+" · "+wrapSizeLabel()+", preset");
     h += '<div class="card'+(n>0?" picked":"")+'" id="wc-'+w.id+'">'
+      + (w.img ? '<img class="card-img" src="'+w.img+'" alt="'+esc(w.name)+'" loading="lazy" onerror="this.style.display=\'none\'" />' : "")
       + '<div class="card-top"><div class="card-main">'
       + '<div class="card-name">'+esc(w.name)+'</div>'
       + '<div class="card-meta"><span class="price">'+priceTxt+'</span> each'+(w.note?' · '+esc(w.note):"")+'</div></div>'
