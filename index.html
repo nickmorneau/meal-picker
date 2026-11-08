@@ -372,7 +372,7 @@ var DINNERS = [
   {id:"roll-in-a-bowl", name:"Roll in a Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2024/09/img_0621-scaled.jpeg", tag:"Bowl", optLabel:"Carb", options:["White rice","Brown rice","Quinoa","Cauliflower rice"]},
   /* protein choice */
   {id:"autumn-bbq-bowl", name:"Autumn BBQ Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2024/09/img_4241-scaled.jpeg", tag:"Bowl", optLabel:"Protein", options:["Chicken Breast","Chicken Thighs","Beef Meatballs","Tofu"]},
-  {id:"bbq-jerk-bowl", name:"BBQ Jerk Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2025/02/img_6713.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Tofu"]},
+  {id:"bbq-jerk-bowl", name:"BBQ Jerk Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2025/02/img_6713.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Tofu"], opt2Label:"Carb", options2:["Potatoes","Brown rice","White rice","Cauliflower rice"]},
   {id:"bombay-bowl", name:"Bombay Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2024/05/img_1484-scaled.jpeg", tag:"Bowl", optLabel:"Protein", options:["Chicken Thighs","Chicken Breast","White Fish","Tofu"]},
   {id:"buffalo-bowl", name:"Buffalo Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2024/03/img_0077-scaled.jpeg", tag:"Bowl", optLabel:"Protein", options:["Chicken breast","Chicken thighs","Ground turkey","Ground beef"]},
   {id:"garlic-lemon-bowl", name:"Garlic Lemon Bowl", img:"https://i0.wp.com/trainingdaycafe.com/wp-content/uploads/2025/02/img_6717.jpg", tag:"Bowl", optLabel:"Protein", options:["Chicken Thighs","Chicken Breast","Tofu","Salmon","White Fish"]},
@@ -421,7 +421,7 @@ var CUSTOM = {
   "Beef": {
     flavours:["Garlic Beef Meatballs","Taco Spice Ground Beef","Plain Ground Beef","Ground Beef Marinara","BBQ Beef Meatballs"],
     carbs:["Brown Rice Pasta","Brown Rice","Quinoa","White Rice","Cauliflower Rice","Yams","Sweet Potatoes","Potatoes","Sweet Potato Mash","Yam Mash"],
-    sauces:["Chilli Garlic","Chipotle","Teriyaki","Sweet Chilli","Basil Pesto","Tomato Pesto","Alfredo Sauce","Creamy Garlic Sauce","Cucumber Wasabi","No Sauce"]
+    sauces:["Chilli Garlic","Chipotle","Teriyaki","Sweet Chilli","Basil Pesto","Tomato Pesto","Alfredo Sauce","Creamy Garlic Sauce","Mac Sauce","Cucumber Wasabi","No Sauce"]
   },
   "Salmon": {
     flavours:["Cajun Salmon","Teriyaki Salmon","Lemon Pepper Salmon","Salt & Pepper Salmon"],
@@ -442,12 +442,13 @@ var mode = "both"; /* both | nick | blandine */
 var dinnerNick = {};     /* id -> true (Nick's pick, 6 oz) */
 var dinnerBlandine = {}; /* id -> true (Blandine's pick, 4 oz) */
 var dinnerChoice = {};/* id -> chosen option (first option by default) */
+var dinnerChoice2 = {};/* id -> chosen second option (first option by default, e.g. Carb on BBQ Jerk Bowl) */
 var wrapCount = {};   /* id -> count */
 var wrapChoice = {};  /* id -> chosen option */
 var wrapChoice2 = {}; /* id -> chosen sauce (turkey sausage wrap) */
 var custom = { open:false, added:false, family:"Chicken", flavour:null, carb:null, veggie:null, sauce:null, notes:"", forWho:"both" };
 
-DINNERS.forEach(function(d){ if(d.options) dinnerChoice[d.id]=d.options[0]; });
+DINNERS.forEach(function(d){ if(d.options) dinnerChoice[d.id]=d.options[0]; if(d.options2) dinnerChoice2[d.id]=d.options2[0]; });
 WRAPS.forEach(function(w){
   if(w.options) wrapChoice[w.id]=w.options[0];
   if(w.options2) wrapChoice2[w.id]=w.options2[0];
@@ -550,6 +551,7 @@ function buildOrderObject(){
     dinners.push({
       name: d.name,
       proteinOrBase: d.options ? dinnerChoice[d.id] : null,
+      carb: d.options2 ? dinnerChoice2[d.id] : null,
       nickSizeOz: forNick ? 6 : null,
       blandineSizeOz: forBlandine ? 4 : null,
       quantityNick: forNick ? 1 : 0,
@@ -652,6 +654,7 @@ function renderDinners(){
       + '<div class="card-meta">'+dinnerPriceLabel(d)+(d.note?' · '+esc(d.note):"")+'</div></div>'
       + controls + '</div>';
     if(d.options) h += chipRowHTML("dinner", d.id, d.optLabel, d.options, dinnerChoice[d.id]);
+    if(d.options2) h += chipRowHTML("dinner2", d.id, d.opt2Label, d.options2, dinnerChoice2[d.id]);
     h += '</div>';
   });
   $("dinnerCards").innerHTML = h;
@@ -741,6 +744,7 @@ function buildSummary(){
     var line = (i++)+". "+d.name+" — "+sizeLabelFor(forN,forB);
     if(d.options) line += " — "+d.optLabel+": "+dinnerChoice[d.id];
     else if(d.note) line += " — "+d.note;
+    if(d.options2) line += " — "+d.opt2Label+": "+dinnerChoice2[d.id];
     L.push(line);
   });
   if(custom.added){
@@ -892,6 +896,7 @@ document.addEventListener("click", function(e){
   if(chip){
     var kind = chip.getAttribute("data-kind"), val = chip.getAttribute("data-val"), cid = chip.getAttribute("data-id");
     if(kind==="dinner") dinnerChoice[cid] = val;
+    else if(kind==="dinner2") dinnerChoice2[cid] = val;
     else if(kind==="wrap"){ wrapChoice[cid] = val; if(wrapCount[cid]===0) wrapCount[cid]=1; }
     else if(kind==="wrap2"){ wrapChoice2[cid] = val; if(wrapCount[cid]===0) wrapCount[cid]=1; }
     else if(kind==="cfor") custom.forWho = val;
