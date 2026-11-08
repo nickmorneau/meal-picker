@@ -205,6 +205,14 @@
   }
   @media (prefers-color-scheme: dark){ .custom-add{color:#0E1A10} }
   .custom-add.added{background:var(--surface);color:var(--accent);border:2.5px solid var(--accent)}
+  .custom-list{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .custom-list-label{font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .custom-item{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+  .custom-item-main{flex:1;min-width:0}
+  .custom-item-name{font-weight:800;font-size:15.5px;line-height:1.25}
+  .custom-item-meta{font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.4}
+  .custom-remove{flex:none;min-height:40px;padding:8px 13px;border-radius:999px;border:2px solid var(--accent);color:var(--accent);background:var(--surface);font-weight:800;font-size:13.5px}
+  .custom-remove:active{transform:scale(.97)}
 
   /* ---------- summary ---------- */
   .summary-card{background:var(--surface);border:2px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 16px}
@@ -314,8 +322,8 @@
   </section>
 
   <section id="customSec">
-    <div class="sec-head"><h2>Custom dinner</h2><div class="sec-count" id="customCountLabel">counts as a dinner</div></div>
-    <p class="sec-sub">Build your own instead of a menu dinner — protein, carb, veggie, sauce. In Both mode you can make it for Nick, Blandine, or both.</p>
+    <div class="sec-head"><h2>Custom dinners</h2><div class="sec-count" id="customCountLabel">counts as a dinner</div></div>
+    <p class="sec-sub">Build your own instead of a menu dinner — protein, carb, veggie, sauce. Add as many as you like: build one, tap Add, then build the next. In Both mode you can make each one for Nick, Blandine, or both.</p>
     <div class="card custom-card" id="customCard">
       <button class="custom-open-btn" id="customOpenBtn" aria-expanded="false">+ Build a custom meal</button>
       <div class="custom-body" id="customBody" hidden></div>
@@ -446,7 +454,9 @@ var dinnerChoice2 = {};/* id -> chosen second option (first option by default, e
 var wrapCount = {};   /* id -> count */
 var wrapChoice = {};  /* id -> chosen option */
 var wrapChoice2 = {}; /* id -> chosen sauce (turkey sausage wrap) */
-var custom = { open:false, added:false, family:"Chicken", flavour:null, carb:null, veggie:null, sauce:null, notes:"", forWho:"both" };
+var custom = { open:false, family:"Chicken", flavour:null, carb:null, veggie:null, sauce:null, notes:"", forWho:"both" };
+var customMeals = []; /* every custom dinner added — no limit */
+var customSeq = 0;
 
 DINNERS.forEach(function(d){ if(d.options) dinnerChoice[d.id]=d.options[0]; if(d.options2) dinnerChoice2[d.id]=d.options2[0]; });
 WRAPS.forEach(function(w){
@@ -466,9 +476,12 @@ function money(n){ return "$" + (Math.round(n*100)/100).toFixed(2).replace(/\.00
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 
 /* sizes / per-person dinner helpers — no maximums, minimum 4 each */
-function customForNick(){ if(!custom.added) return false; if(mode==="nick") return true; if(mode==="blandine") return false; return custom.forWho==="both"||custom.forWho==="nick"; }
-function customForBlandine(){ if(!custom.added) return false; if(mode==="blandine") return true; if(mode==="nick") return false; return custom.forWho==="both"||custom.forWho==="blandine"; }
-function customPrice(){ return (customForNick()?P6:0)+(customForBlandine()?P4:0); }
+function mealForNick(m){ if(mode==="nick") return true; if(mode==="blandine") return false; return m.forWho==="both"||m.forWho==="nick"; }
+function mealForBlandine(m){ if(mode==="blandine") return true; if(mode==="nick") return false; return m.forWho==="both"||m.forWho==="blandine"; }
+function customCountNick(){ return customMeals.filter(mealForNick).length; }
+function customCountBlandine(){ return customMeals.filter(mealForBlandine).length; }
+function customPrice(){ var t=0; customMeals.forEach(function(m){ t += (mealForNick(m)?P6:0)+(mealForBlandine(m)?P4:0); }); return t; }
+function draftPrice(){ if(mode==="both") return custom.forWho==="both"?P6+P4:(custom.forWho==="nick"?P6:P4); return mode==="nick"?P6:P4; }
 function dinnerPriceFor(id){ return ((dinnerNick[id]?P6:0)+(dinnerBlandine[id]?P4:0)); }
 function dinnerPrice(){ return mode==="both" ? P4+P6 : (mode==="nick" ? P6 : P4); } /* legacy: price if picked for everyone in current mode */
 function dinnerWhoLabel(id){
@@ -489,8 +502,8 @@ function wrapUnitPrice(w){
   if(w.fixedPrice) return w.fixedPrice;
   return mode==="blandine" ? P4 : P6;
 }
-function dinnerCountNick(){ return Object.keys(dinnerNick).length + (customForNick()?1:0); }
-function dinnerCountBlandine(){ return Object.keys(dinnerBlandine).length + (customForBlandine()?1:0); }
+function dinnerCountNick(){ return Object.keys(dinnerNick).length + customCountNick(); }
+function dinnerCountBlandine(){ return Object.keys(dinnerBlandine).length + customCountBlandine(); }
 function dinnerCount(){ /* total individual dinner meals */ return dinnerCountNick()+dinnerCountBlandine(); }
 function dinnersReady(){
   if(mode==="nick") return dinnerCountNick()>=4;
@@ -507,7 +520,7 @@ function totalPrice(){
     if(mode==="blandine") p = dinnerBlandine[d.id] ? P4 : 0;
     t += p;
   });
-  if(custom.added) t += customPrice();
+  t += customPrice();
   WRAPS.forEach(function(w){ t += wrapCount[w.id]*wrapUnitPrice(w); });
   return t;
 }
@@ -560,25 +573,26 @@ function buildOrderObject(){
       custom: null
     });
   });
-  if(custom.added){
+  customMeals.forEach(function(m){
+    var forN = mealForNick(m), forB = mealForBlandine(m);
     dinners.push({
       name: "Custom Meal",
-      proteinOrBase: custom.flavour,
-      nickSizeOz: customForNick() ? 6 : null,
-      blandineSizeOz: customForBlandine() ? 4 : null,
-      quantityNick: customForNick() ? 1 : 0,
-      quantityBlandine: customForBlandine() ? 1 : 0,
+      proteinOrBase: m.flavour,
+      nickSizeOz: forN ? 6 : null,
+      blandineSizeOz: forB ? 4 : null,
+      quantityNick: forN ? 1 : 0,
+      quantityBlandine: forB ? 1 : 0,
       isCustom: true,
       custom: {
-        family: custom.family,
-        flavour: custom.flavour,
-        carb: custom.carb,
-        veggie: custom.veggie,
-        sauce: custom.sauce,
-        notes: custom.notes.trim() || ""
+        family: m.family,
+        flavour: m.flavour,
+        carb: m.carb,
+        veggie: m.veggie,
+        sauce: m.sauce,
+        notes: (m.notes || "").trim()
       }
     });
-  }
+  });
   var wraps = [];
   WRAPS.forEach(function(w){
     var qty = wrapCount[w.id]||0;
@@ -679,9 +693,29 @@ function renderWraps(){
   });
   $("wrapCards").innerHTML = h;
 }
+function customListHTML(){
+  if(!customMeals.length) return "";
+  var h = '<div class="custom-list"><div class="custom-list-label">Added custom dinners · '+customMeals.length+'</div>';
+  customMeals.forEach(function(m, idx){
+    var who = sizeLabelFor(mealForNick(m), mealForBlandine(m));
+    var details = m.flavour+", "+m.carb+", "+m.veggie+", "+m.sauce;
+    if(m.notes && m.notes.trim()) details += " — Note: "+m.notes.trim();
+    h += '<div class="custom-item"><div class="custom-item-main">'
+      + '<div class="custom-item-name">'+(idx+1)+'. Custom '+esc(m.family)+(who?' — '+esc(who):"")+'</div>'
+      + '<div class="custom-item-meta">'+esc(details)+'</div></div>'
+      + '<button class="custom-remove" data-remove-custom="'+m.id+'" aria-label="Remove custom dinner '+(idx+1)+'">Remove</button></div>';
+  });
+  return h + '</div>';
+}
 function renderCustom(){
   var body = $("customBody");
-  if(!custom.open){ body.hidden = true; return; }
+  if(!custom.open){
+    /* Keep added meals visible (and removable) even when the builder is closed */
+    body.innerHTML = customListHTML();
+    body.hidden = !customMeals.length;
+    closeCustomBtn();
+    return;
+  }
   body.hidden = false;
   $("customOpenBtn").textContent = "− Close the custom builder";
   $("customOpenBtn").setAttribute("aria-expanded","true");
@@ -702,14 +736,13 @@ function renderCustom(){
   h += chipBlock("4 · Veggie", "cveggie", VEGGIES, custom.veggie);
   h += chipBlock("5 · Sauce", "csauce", c.sauces, custom.sauce);
   h += '<input class="notes-input" id="customNotes" type="text" placeholder="Notes for this meal (optional)" value="'+esc(custom.notes)+'" autocomplete="off" />';
-  var cPrice = mode==="both" ? ((custom.forWho==="both"?P6+P4:custom.forWho==="nick"?P6:P4)) : dinnerPrice();
-  h += '<button class="custom-add'+(custom.added?" added":"")+'" id="customAddBtn">'
-    + (custom.added ? "✓ Added — tap to remove" : "Add this custom dinner · "+money(cPrice))
-    + '</button>';
+  h += '<button class="custom-add" id="customAddBtn">Add this custom dinner · '+money(draftPrice())+'</button>';
+  h += '<p class="hint" style="margin-top:10px">Tap Add, then build the next one — you can add as many custom dinners as you like.</p>';
+  h += customListHTML();
   body.innerHTML = h;
   var ni = $("customNotes");
   ni.addEventListener("input", function(){ custom.notes = ni.value; refresh(false); });
-  $("customAddBtn").addEventListener("click", toggleCustom);
+  $("customAddBtn").addEventListener("click", addCustomMeal);
 }
 function chipBlock(label, kind, options, current){
   var h = '<div class="step-block"><div class="chips-label">'+label+'</div><div class="chip-row">';
@@ -717,7 +750,7 @@ function chipBlock(label, kind, options, current){
   return h + '</div></div>';
 }
 function closeCustomBtn(){
-  $("customOpenBtn").textContent = "+ Build a custom meal";
+  $("customOpenBtn").textContent = customMeals.length ? "+ Build another custom meal" : "+ Build a custom meal";
   $("customOpenBtn").setAttribute("aria-expanded","false");
 }
 
@@ -747,12 +780,12 @@ function buildSummary(){
     if(d.options2) line += " — "+d.opt2Label+": "+dinnerChoice2[d.id];
     L.push(line);
   });
-  if(custom.added){
-    var cl = (i++)+". Custom "+custom.family+" — "+sizeLabelFor(customForNick(),customForBlandine())
-      +" — "+custom.flavour+", "+custom.carb+", "+custom.veggie+", "+custom.sauce;
-    if(custom.notes.trim()) cl += " — Note: "+custom.notes.trim();
+  customMeals.forEach(function(m){
+    var cl = (i++)+". Custom "+m.family+" — "+sizeLabelFor(mealForNick(m),mealForBlandine(m))
+      +" — "+m.flavour+", "+m.carb+", "+m.veggie+", "+m.sauce;
+    if(m.notes && m.notes.trim()) cl += " — Note: "+m.notes.trim();
     L.push(cl);
-  }
+  });
   if(dc===0 || (mode==="nick"&&dcN===0) || (mode==="blandine"&&dcB===0)) L.push("(none yet)");
   L.push("");
   var wt = wrapTotal();
@@ -814,7 +847,7 @@ function refresh(rerender){
   if(mode==="both") $("dinnerCountLabel").textContent = "Nick "+dcN+" · Blandine "+dcB+" picked";
   else $("dinnerCountLabel").textContent = displayDc+" picked · need at least 4";
   $("wrapCountLabel").textContent = wt+" picked · "+(wt>=4 ? "good ✓ · extras ok" : "need at least 4");
-  $("customCountLabel").textContent = custom.added ? "added ✓ counts as a dinner" : "counts as a dinner";
+  $("customCountLabel").textContent = customMeals.length ? customMeals.length+" added ✓ · each counts as a dinner" : "counts as a dinner";
   var pickup = getPickupDate();
   var topEl = $("pickupLabelTop"); if(topEl) topEl.textContent = formatPickupShort(pickup)+" pickup";
   var lineEl = $("pickupLine"); if(lineEl) lineEl.textContent = "Pickup: "+formatPickupLong(pickup)+" · Kraken Fitness Burnaby, after 2pm";
@@ -878,11 +911,30 @@ function toggleDinnerFor(id, person){
   if(map[id]){ delete map[id]; } else { map[id] = true; }
   refresh();
 }
-function toggleCustom(){
-  custom.added = !custom.added;
+function addCustomMeal(){
+  customSeq += 1;
+  customMeals.push({
+    id: "custom-" + customSeq,
+    family: custom.family,
+    flavour: custom.flavour,
+    carb: custom.carb,
+    veggie: custom.veggie,
+    sauce: custom.sauce,
+    notes: custom.notes || "",
+    forWho: custom.forWho
+  });
+  custom.notes = "";
   refresh();
+  toast("Custom dinner added ✓ — build another if you want more");
+}
+function removeCustomMeal(id){
+  customMeals = customMeals.filter(function(m){ return m.id !== id; });
+  refresh();
+  toast("Custom dinner removed");
 }
 document.addEventListener("click", function(e){
+  var removeC = e.target.closest("[data-remove-custom]");
+  if(removeC){ removeCustomMeal(removeC.getAttribute("data-remove-custom")); return; }
   var pickP = e.target.closest("[data-pick-person]");
   if(pickP){ toggleDinnerFor(pickP.getAttribute("data-id"), pickP.getAttribute("data-pick-person")); return; }
   var step = e.target.closest("[data-step]");
@@ -918,7 +970,7 @@ document.addEventListener("click", function(e){
 });
 $("customOpenBtn").addEventListener("click", function(){
   custom.open = !custom.open;
-  if(custom.open) renderCustom(); else { $("customBody").hidden = true; closeCustomBtn(); }
+  if(custom.open) renderCustom(); else { closeCustomBtn(); renderCustom(); }
 });
 $("doneBtn").addEventListener("click", function(){
   $("summarySec").scrollIntoView({behavior:"smooth", block:"start"});
