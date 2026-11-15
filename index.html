@@ -286,7 +286,7 @@
         <div class="prog-num"><span id="dinnerNum">0</span></div>
       </div>
       <div class="prog">
-        <div class="p-label">Wraps <span>4+ · no max</span></div>
+        <div class="p-label">Wraps <span id="wrapProgLabel">4+ · no max</span></div>
         <div class="dots" id="wrapDots"></div>
         <div class="prog-num"><span id="wrapNum">0</span></div>
       </div>
@@ -332,7 +332,7 @@
 
   <section id="wrapsSec">
     <div class="sec-head"><h2>2 · Wraps</h2><div class="sec-count" id="wrapCountLabel">0 picked · need at least 4</div></div>
-    <p class="sec-sub">Tap + to add one, − to take one off. At least 4, and no max — add as many extra wraps as you want. Size is preset, shown on each card.</p>
+    <p class="sec-sub" id="wrapSecSub">Tap + to add one, − to take one off. At least 4, and no max — add as many extra wraps as you want. Size is preset, shown on each card.</p>
     <div class="cards" id="wrapCards"></div>
   </section>
 
@@ -510,7 +510,10 @@ function dinnersReady(){
   if(mode==="blandine") return dinnerCountBlandine()>=4;
   return dinnerCountNick()>=4 && dinnerCountBlandine()>=4;
 }
-function isReady(){ return dinnersReady() && wrapTotal()>=4; }
+function isReady(){
+  if(mode==="both") return dinnersReady() && wrapTotal()>=4;
+  return dinnersReady();
+}
 function wrapTotal(){ var t=0; for(var k in wrapCount) t+=wrapCount[k]; return t; }
 function totalPrice(){
   var t = 0;
@@ -789,7 +792,8 @@ function buildSummary(){
   if(dc===0 || (mode==="nick"&&dcN===0) || (mode==="blandine"&&dcB===0)) L.push("(none yet)");
   L.push("");
   var wt = wrapTotal();
-  L.push("WRAPS — "+wt+" (minimum 4, no max)");
+  if(mode==="both") L.push("WRAPS — "+wt+" (minimum 4, no max)");
+  else L.push("WRAPS — "+wt+" (shared · optional in your own send, no max)");
   WRAPS.forEach(function(w){
     if(!wrapCount[w.id]) return;
     var line = "- "+w.name+" ×"+wrapCount[w.id];
@@ -846,7 +850,10 @@ function refresh(rerender){
   dots($("wrapDots"), Math.min(wt,4), 4, 4);
   if(mode==="both") $("dinnerCountLabel").textContent = "Nick "+dcN+" · Blandine "+dcB+" picked";
   else $("dinnerCountLabel").textContent = displayDc+" picked · need at least 4";
-  $("wrapCountLabel").textContent = wt+" picked · "+(wt>=4 ? "good ✓ · extras ok" : "need at least 4");
+  if(mode==="both") $("wrapCountLabel").textContent = wt+" picked · "+(wt>=4 ? "good ✓ · extras ok" : "need at least 4");
+  else $("wrapCountLabel").textContent = wt+" picked · shared · optional in your send";
+  var wpLabel = $("wrapProgLabel"); if(wpLabel) wpLabel.textContent = mode==="both" ? "4+ · no max" : "shared · optional";
+  var wSub = $("wrapSecSub"); if(wSub) wSub.textContent = mode==="both" ? "Tap + to add one, − to take one off. At least 4, and no max — add as many extra wraps as you want. Size is preset, shown on each card." : "Tap + to add one, − to take one off. Wraps are shared household picks — optional in your own send. Add any you want included in your send, or send with none. Size is preset, shown on each card.";
   $("customCountLabel").textContent = customMeals.length ? customMeals.length+" added ✓ · each counts as a dinner" : "counts as a dinner";
   var pickup = getPickupDate();
   var topEl = $("pickupLabelTop"); if(topEl) topEl.textContent = formatPickupShort(pickup)+" pickup";
@@ -859,7 +866,8 @@ function refresh(rerender){
     if(dcB<4) parts.push("Blandine needs "+(4-dcB)+" more");
     status = parts.join(" · "); sub = wt<4 ? "dinners first, then at least 4 wraps — extras are fine" : "wraps look good ✓ — extras are fine";
   }
-  else if(mode!=="both" && displayDc<4){ status = "Pick "+(4-displayDc)+" more dinner"+(4-displayDc===1?"":"s"); sub = wt<4 ? "then add wraps (need at least 4)" : "wraps look good ✓"; }
+  else if(mode!=="both" && displayDc<4){ status = "Pick "+(4-displayDc)+" more dinner"+(4-displayDc===1?"":"s"); sub = "wraps are shared · optional in your own send"; }
+  else if(mode!=="both"){ status = "Ready to send ✓"+(displayDc>4 ? " — extras included" : ""); sub = wt>0 ? "you've added "+wt+" shared wrap"+(wt===1?"":"s")+" · tap Done, then Send my picks" : "wraps are shared · optional · tap Done, then Send my picks"; }
   else if(wt<4){ status = "Dinners done ✓ — add "+(4-wt)+" more wrap"+(4-wt===1?"":"s"); sub = "need at least 4 wraps · no max"; }
   else { status = "All picked ✓"+(dc> (mode==="both"?8:4) || wt>4 ? " — extras included" : ""); sub = "tap Done, then Send my picks · you can keep adding extras"; }
   $("bbStatus").innerHTML = esc(status)+"<small>"+esc(sub)+"</small>";
@@ -987,8 +995,19 @@ $("copyBtn").addEventListener("click", function(){
 $("sendBtn").addEventListener("click", function(){
   if(sendState.sending) return;
   if(!isReady()){
-    var msg = mode==="both" ? "Not ready yet — Nick needs at least 4 dinners, Blandine needs at least 4 dinners (shared or her own separate picks at 4 oz), and you need at least 4 wraps. Extras beyond that are fine." : "Not ready yet — pick at least 4 dinners and at least 4 wraps, then tap Send. Extras beyond that are fine.";
-    toast("Pick at least 4 dinners each and at least 4 wraps first");
+    var dcN2 = dinnerCountNick(), dcB2 = dinnerCountBlandine();
+    var soloReadyName = null, soloEmptyName = null;
+    if(mode==="both" && dcN2>=4 && dcB2===0){ soloReadyName = "Nick"; soloEmptyName = "Blandine"; }
+    else if(mode==="both" && dcB2>=4 && dcN2===0){ soloReadyName = "Blandine"; soloEmptyName = "Nick"; }
+    if(soloReadyName){
+      var soloMsg = "Only "+soloReadyName+" has picked so far — "+soloEmptyName+" hasn't picked any dinners yet. Tap "+soloReadyName+" at the top to send just "+soloReadyName+"'s own picks from this phone. If you're "+soloEmptyName+", tap "+soloEmptyName+" at the top to pick and send your own. Both of us mode is for sending together and needs 4+ dinners each plus 4+ wraps.";
+      toast("Tap "+soloReadyName+" at the top to send just your own picks");
+      setSendStatus("error", soloMsg);
+      $("summarySec").scrollIntoView({behavior:"smooth", block:"start"});
+      return;
+    }
+    var msg = mode==="both" ? "Not ready yet — Nick needs at least 4 dinners, Blandine needs at least 4 dinners (shared or her own separate picks at 4 oz), and you need at least 4 wraps. Extras beyond that are fine." : "Not ready yet — pick at least 4 dinners, then tap Send. Wraps are shared and optional in your own send, so you don't need any wraps to send. Extras beyond 4 dinners are fine.";
+    toast(mode==="both" ? "Pick at least 4 dinners each and at least 4 wraps first" : "Pick at least 4 dinners first");
     setSendStatus("error", msg);
     $("summarySec").scrollIntoView({behavior:"smooth", block:"start"});
     return;
